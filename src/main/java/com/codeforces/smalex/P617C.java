@@ -11,27 +11,31 @@ public class P617C {
   InputStream is;
   PrintWriter out;
   // String INPUT = "2 -1 0 5 3 0 2 5 2";
-  String INPUT = "4 0 0 5 0 9 4 8 3 -1 0 1 4";
-  
+  // String INPUT = "4 0 0 5 0 9 4 8 3 -1 0 1 4";
+  String INPUT = "1 -10000000 -10000000 -10000000 -9999999\n" +
+      "10000000 10000000";
+
   void solve() {
     int n = ni();
-    int x1 = ni();
-    int y1 = ni();
-    int x2 = ni();
-    int y2 = ni();
-    int[] r1arr = new int[n];
-    int[] r2arr = new int[n];
+    long x1 = nl();
+    long y1 = nl();
+    long x2 = nl();
+    long y2 = nl();
+    long[] r1arr = new long[n + 1];
+    long[] r2arr = new long[n + 1];
     for (int i = 0; i < n; i++) {
-      int x = ni();
-      int y = ni();
-      r1arr[i] = (x1 - x) * (x1 - x) + (y1 - y) * (y1 - y);
-      r2arr[i] = (x2 - x) * (x2 - x) + (y2 - y) * (y2 - y);
+      long x = nl();
+      long y = nl();
+      r1arr[i] = radius(x1, y1, x, y);
+      r2arr[i] = radius(x2, y2, x, y);
     }
-    int best = Integer.MAX_VALUE;
-    for (int i = 0; i < n; i++) {
-      int r1 = r1arr[i];
-      int r2 = 0;
-      for (int j = 0; j < n; j++) {
+    r1arr[n] = 0;
+    r2arr[n] = 0;
+    long best = Long.MAX_VALUE;
+    for (int i = 0; i <= n; i++) {
+      long r1 = r1arr[i];
+      long r2 = 0L;
+      for (int j = 0; j <= n; j++) {
         if (r1arr[j] > r1) {
           r2 = Math.max(r2, r2arr[j]);
         }
@@ -41,10 +45,12 @@ public class P617C {
     System.out.println(best);
   }
 
-  public int radius(int x, int y, int x1, int y1) {
-    return (x1 - x) * (x1 - x) + (y1 - y) * (y1 - y);
+  private long radius(long x1, long y1, long x, long y) {
+    long d1 = x1 - x;
+    long d2 = y1 - y;
+    return d1 * d1 + d2 * d2;
   }
-  
+
   public static void main(String[] args) throws Exception {
     new P617C().run();
   }
