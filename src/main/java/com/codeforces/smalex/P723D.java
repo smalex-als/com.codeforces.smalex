@@ -4,31 +4,34 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.InputMismatchException;
-import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Set;
 
 public class P723D {
   // problem http://codeforces.com/contest/723723/problem/D
   InputStream is;
   PrintWriter out;
-  String INPUT =    "4 3 2\n" +
-                    "***\n" +
-                    "***\n" +
-                    "*.*\n" +
-                    "**.\n";
+  String INPUT = "5 4 1\n"+
+    "****\n"+
+    "*..*\n"+
+    "****\n"+
+    "**.*\n"+
+    "..**\n";
+
   int lastColor = 1;
 
-  int[] len = new int[50*50];
+  int[] len;
 
   void solve() {
     int y = ni();
     int x = ni();
     int k = ni();
     int[][] m = new int[y + 2][x + 2];
+    len = new int[y * x];
     for (int i = 0; i < y; i++) {
       String str = ns();
       for (int j = 0; j < x; j++) {
@@ -38,67 +41,59 @@ public class P723D {
         }
       }
     }
-    dfs(m, 0, 0, true);
+    dfs(m, 0, 0, ++lastColor);
     for (int i = 0; i < y; i++) {
       for (int j = 0; j < x; j++) {
-        dfs(m, i + 1, j + 1, true);
+        if (m[i + 1][j + 1] == 0) {
+          dfs(m, i + 1, j + 1, ++lastColor);
+        }
       }
     }
-    List<Integer> colors = new ArrayList<>();
+    PriorityQueue<Integer> colors = new PriorityQueue<>(new Comparator<Integer>() {
+      @Override
+      public int compare(Integer o1, Integer o2) {
+        return Integer.compare(len[o1], len[o2]);
+      }
+    });
+
     for (int i = 3; i < len.length; i++) {
       if (len[i] > 0) {
         colors.add(i);
       }
     }
-    if (colors.size() > 1) {
-      Collections.sort(colors, new Comparator<Integer>() {
-        @Override
-        public int compare(Integer o1, Integer o2) {
-          return Integer.compare(len[o2], len[o1]);
-        }
-      });
+    Set<Integer> deleted = new HashSet<>();
+    while (colors.size() > k) {
+      deleted.add(colors.poll());
     }
-    int nowK = colors.size();
+    StringBuilder sb = new StringBuilder();
     int res = 0;
-    while (nowK > k) {
-      int deleteColor = colors.remove(colors.size() - 1);
-      nowK--;
-      for (int i = 0; i < y; i++) {
-        for (int j = 0; j < x; j++) {
-          if (m[i + 1][j + 1] == deleteColor) {
-            m[i + 1][j + 1] = 1;
-            res++;
-          }
-        }
-      }
-    }
-    
-    System.out.println(res);
     for (int i = 0; i < y; i++) {
-      StringBuilder sb = new StringBuilder();
       for (int j = 0; j < x; j++) {
-        if (m[i + 1][j + 1] == 1) {
+        int p = m[i + 1][j + 1];
+        if (p == 1) {
           sb.append('*');
+        } else if (deleted.contains(p)) {
+          sb.append('*');
+          res++;
         } else {
           sb.append('.');
         }
       }
-      System.out.println(sb.toString());
+      sb.append("\n");
     }
+    out.println(res);
+    out.println(sb.toString());
   }
 
-  public void dfs(int[][] m, int y, int x, boolean first) {
+  public void dfs(int[][] m, int y, int x, int color) {
     if (y >= 0 && x >= 0 && y < m.length && x < m[0].length 
         && m[y][x] == 0) {
-      if (first) {
-        lastColor++;
-      }
-      m[y][x] = lastColor;
-      len[lastColor]++;
-      dfs(m, y + 1, x, false);
-      dfs(m, y - 1, x, false);
-      dfs(m, y, x - 1, false);
-      dfs(m, y, x + 1, false);
+      m[y][x] = color;
+      len[color]++;
+      dfs(m, y + 1, x, color);
+      dfs(m, y - 1, x, color);
+      dfs(m, y, x - 1, color);
+      dfs(m, y, x + 1, color);
     }
   }
   
@@ -107,20 +102,6 @@ public class P723D {
   }
   
   void run() throws Exception {
-    INPUT = "50 50 0\n";
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < 25; i++) {
-      for (int j = 0; j < 25; j++) {
-        sb.append(".*");
-      }
-      sb.append("\n");
-      for (int j = 0; j < 25; j++) {
-        sb.append("*.");
-      }
-      sb.append("\n");
-      
-    }
-    INPUT += sb.toString();
     is = oj ? System.in : new ByteArrayInputStream(INPUT.getBytes());
     out = new PrintWriter(System.out);
   
