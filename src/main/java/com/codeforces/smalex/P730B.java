@@ -33,7 +33,7 @@ public class P730B {
       List<Integer> max = new ArrayList<>();
 
       for (int j = 0; j + 1 < n; j += 2) {
-        if (less(a, j, j + 1)) {
+        if (compare(a, j, j + 1, "<=")) {
           min.add(a.get(j));
           max.add(a.get(j + 1));
         } else {
@@ -43,57 +43,43 @@ public class P730B {
       }
       if (a.size() % 2 == 1) {
         a.set(0, min.get(0));
-        if (less(a, 0, n - 1)) {
+        if (compare(a, 0, n - 1, "<=")) {
           max.add(a.get(n - 1));
         } else {
           min.set(0, a.get(n - 1));
         }
       }
-      while (min.size() > 1) {
-        List<Integer> newArr = new ArrayList<>();
-        for (int j = 0; j + 1 < min.size(); j += 2) {
-          if (less(min, j, j + 1)) {
-            newArr.add(min.get(j));
-          } else {
-            newArr.add(min.get(j + 1));
-          }
-        }
-        if (min.size() % 2 == 1) {
-          newArr.add(min.get(min.size() - 1));
-        }
-        min = newArr;
-      }
-      while (max.size() > 1) {
-        List<Integer> newArr = new ArrayList<>();
-        for (int j = 0; j + 1 < max.size(); j += 2) {
-          if (great(max, j, j + 1)) {
-            newArr.add(max.get(j));
-          } else {
-            newArr.add(max.get(j + 1));
-          }
-        }
-        if (max.size() % 2 == 1) {
-          newArr.add(max.get(max.size() - 1));
-        }
-        max = newArr;
-      }
+      min = optimize(min, "<=");
+      max = optimize(max, ">=");
       out.println("! " + (min.get(0) + 1) + " " + (max.get(0) + 1));
       out.flush();
     }
   }
 
-  public boolean less(List<Integer> a, int i, int j) {
-    out.println("? " + (a.get(i) + 1) + " " + (a.get(j) + 1));
-    out.flush();
-    String resp = ns();
-    return resp.equals("=") || resp.equals("<");
+  private List<Integer> optimize(List<Integer> a, String op) {
+    List<Integer> tmp = new ArrayList<>();
+    while (a.size() > 1) {
+      tmp.clear();
+      for (int j = 0; j + 1 < a.size(); j += 2) {
+        if (compare(a, j, j + 1, op)) {
+          tmp.add(a.get(j));
+        } else {
+          tmp.add(a.get(j + 1));
+        }
+      }
+      if (a.size() % 2 == 1) {
+        tmp.add(a.get(a.size() - 1));
+      }
+      a.clear();
+      a.addAll(tmp);
+    }
+    return a;
   }
 
-  public boolean great(List<Integer> a, int i, int j) {
+  public boolean compare(List<Integer> a, int i, int j, String op) {
     out.println("? " + (a.get(i) + 1) + " " + (a.get(j) + 1));
     out.flush();
-    String resp = ns();
-    return resp.equals("=") || resp.equals(">");
+    return op.contains(ns());
   }
 
   public static void main(String[] args) throws Exception {
