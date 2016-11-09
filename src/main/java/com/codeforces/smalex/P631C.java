@@ -7,15 +7,23 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Map;
 
 public class P631C {
   InputStream is;
   PrintWriter out;
-  String INPUT = "4 2 1 2 4 3 2 3 1 2";
+  String INPUT = "4 2\n" +
+    "1 2 4 3\n" +
+    "2 3\n" +
+    "1 2\n" +
+    "1 1\n" +
+    "1 2\n" +
+    "2 2\n" +
+    "2 1\n" +
+    "1 3\n" +
+    "1 1\n" +
+    "2 2";
   
   void solve() {
     int n = ni();
@@ -25,55 +33,68 @@ public class P631C {
       a[i] = ni();
     }
 
-    Map<Integer, Boolean> op = new HashMap<Integer, Boolean>();
+    boolean[] dir = new boolean[m];
+    int[] range = new int[m];
     for (int i = 0; i < m; i++) {
-      boolean t = ni() == 1;
-      int r = ni();
-      op.put(r, t);
+      dir[i] = ni() == 1;
+      range[i] = ni();
     }
-    
-    List<Integer> rs = new ArrayList<Integer>(op.keySet());
-    Collections.sort(rs);
-
-    boolean first = true;
-    boolean asc = false;
-    for (int i = rs.size() - 1; i >= 0; i--) {
-      int r = rs.get(i);
-      boolean t = op.get(r);
-      if (first) {
-        asc = true;
-        Arrays.sort(a, 0, r);
-        if (!t) {
-          reverse(a, r);
-          asc = false;
+    List<Integer> sortedPos = new ArrayList<>();
+    List<Boolean> sortedDir = new ArrayList<>();
+    for (int i = m - 1; i >= 0; i--) {
+      int pos = range[i];
+      boolean d = dir[i];
+      if (sortedPos.isEmpty() || sortedPos.get(sortedPos.size() - 1) < pos) {
+        sortedPos.add(pos);
+        sortedDir.add(d);
+      }
+    }
+    Collections.reverse(sortedPos);
+    Collections.reverse(sortedDir);
+    int maxIndex = sortedPos.get(0);
+    int[] arr = Arrays.copyOf(a, maxIndex);
+    Arrays.sort(arr);
+    int hi = arr.length - 1;
+    int lo = 0;
+    int dst = arr.length - 1;
+    for (int i = 0; i < sortedPos.size(); i++) {
+      int from = sortedPos.get(i);
+      int to = i + 1 < sortedPos.size() ? sortedPos.get(i + 1) : 0;
+      int cnt = from - to;
+      if (!sortedDir.get(i)) {
+        for (int j = 0; j < cnt; j++, lo++, dst--) {
+          a[dst] = arr[lo];
         }
-        first = false;
       } else {
-        if (t != asc) {
-          reverse(a, r);
-          asc = t;
+        for (int j = 0; j < cnt; j++, hi--, dst--) {
+          a[dst] = arr[hi];
         }
       }
     }
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < n; i++) {
-      if (i > 0) {
-        sb.append(' ');
-      }
-      sb.append(a[i]);
+    for (int b : a) {
+      out.print(b + " ");
     }
-    out.println(sb.toString());
   }
 
-  public void reverse(int[] a, int to) {
-    to--;
-    for (int i = 0; i <= to / 2; i++) {
-      int tmp = a[to - i];
-      a[to - i] = a[i];
-      a[i] = tmp;
+  public static int[] sortRadix(int[] f) {
+    int[] to = new int[f.length];
+    {
+      int[] b = new int[65537];
+      for(int i = 0;i < f.length;i++)b[1+(f[i]&0xffff)]++;
+      for(int i = 1;i <= 65536;i++)b[i]+=b[i-1];
+      for(int i = 0;i < f.length;i++)to[b[f[i]&0xffff]++] = f[i];
+      int[] d = f; f = to;to = d;
     }
+    {
+      int[] b = new int[65537];
+      for(int i = 0;i < f.length;i++)b[1+(f[i]>>>16)]++;
+      for(int i = 1;i <= 65536;i++)b[i]+=b[i-1];
+      for(int i = 0;i < f.length;i++)to[b[f[i]>>>16]++] = f[i];
+      int[] d = f; f = to;to = d;
+    }
+    return f;
   }
-  
+
   public static void main(String[] args) throws Exception {
     new P631C().run();
   }
