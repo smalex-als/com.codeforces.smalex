@@ -54,11 +54,6 @@ public class P734C {
         }
       }
       if (best != -1) {
-        for (int j = best; j + 1 < k; j++) {
-          if (d[best] == d[best + 1]) {
-            best++;
-          }
-        }
         long cnt = c[best];
         long tt = a[i] * Math.max(0, n - cnt);
         res = Math.min(res, tt);
